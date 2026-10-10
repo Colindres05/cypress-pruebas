@@ -1,0 +1,17 @@
+{
+  "name": "cypress-pruebas",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+
+    "pruebas-chrome": "cypress run --spec cypress/e2e/ejercicio9.cy.js --browser chrome"
+  },
+  "dependencies": {
+    "cypress": "^16.0.0"
+  }
+}

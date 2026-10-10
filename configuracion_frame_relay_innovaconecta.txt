@@ -1,0 +1,187 @@
+TOPOLOGIA FRAME RELAY - INNOVACONECTA
+Serie III - 33.33/100 puntos
+
+Nota:
+- En la imagen las LAN usan 182.168.x.0/24.
+- La WAN Frame Relay usa 20.0.0.0/8 con:
+  Guatemala = 20.0.1.1
+  Honduras  = 20.0.2.2
+  Salvador  = 20.0.4.4
+- Si tus routers usan otra interfaz serial, cambia Serial0/0/0 por la interfaz real
+  que aparece en Packet Tracer, por ejemplo Serial2/0.
+
+============================================================
+1) DIRECCIONAMIENTO DE PCs
+============================================================
+
+PC Guatemala
+IP Address:      182.168.1.2
+Subnet Mask:     255.255.255.0
+Default Gateway: 182.168.1.1
+
+PC Honduras
+IP Address:      182.168.2.2
+Subnet Mask:     255.255.255.0
+Default Gateway: 182.168.2.1
+
+PC Salvador
+IP Address:      182.168.4.2
+Subnet Mask:     255.255.255.0
+Default Gateway: 182.168.4.1
+
+============================================================
+2) CONFIGURACION DEL ROUTER GUATEMALA
+============================================================
+
+enable
+configure terminal
+hostname Guatemala
+no ip domain-lookup
+
+interface FastEthernet0/0
+ description LAN Guatemala
+ ip address 182.168.1.1 255.255.255.0
+ no shutdown
+exit
+
+interface Serial0/0/0
+ description WAN Frame Relay hacia Cloud
+ ip address 20.0.1.1 255.0.0.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 20.0.2.2 102 broadcast
+ frame-relay map ip 20.0.4.4 104 broadcast
+ no shutdown
+exit
+
+ip route 182.168.2.0 255.255.255.0 20.0.2.2
+ip route 182.168.4.0 255.255.255.0 20.0.4.4
+
+end
+write memory
+
+============================================================
+3) CONFIGURACION DEL ROUTER HONDURAS
+============================================================
+
+enable
+configure terminal
+hostname Honduras
+no ip domain-lookup
+
+interface FastEthernet0/0
+ description LAN Honduras
+ ip address 182.168.2.1 255.255.255.0
+ no shutdown
+exit
+
+interface Serial0/0/0
+ description WAN Frame Relay hacia Cloud
+ ip address 20.0.2.2 255.0.0.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 20.0.1.1 201 broadcast
+ frame-relay map ip 20.0.4.4 204 broadcast
+ no shutdown
+exit
+
+ip route 182.168.1.0 255.255.255.0 20.0.1.1
+ip route 182.168.4.0 255.255.255.0 20.0.4.4
+
+end
+write memory
+
+============================================================
+4) CONFIGURACION DEL ROUTER SALVADOR
+============================================================
+
+enable
+configure terminal
+hostname Salvador
+no ip domain-lookup
+
+interface FastEthernet0/0
+ description LAN Salvador
+ ip address 182.168.4.1 255.255.255.0
+ no shutdown
+exit
+
+interface Serial0/0/0
+ description WAN Frame Relay hacia Cloud
+ ip address 20.0.4.4 255.0.0.0
+ encapsulation frame-relay
+ no frame-relay inverse-arp
+ frame-relay map ip 20.0.1.1 401 broadcast
+ frame-relay map ip 20.0.2.2 402 broadcast
+ no shutdown
+exit
+
+ip route 182.168.1.0 255.255.255.0 20.0.1.1
+ip route 182.168.2.0 255.255.255.0 20.0.2.2
+
+end
+write memory
+
+============================================================
+5) CONFIGURACION DEL FRAME RELAY CLOUD
+============================================================
+
+En Packet Tracer:
+1. Haz clic en el Cloud.
+2. Ve a Config > Serial.
+3. Activa las interfaces seriales usadas por los tres routers.
+4. Configura LMI en Cisco o ANSI. Si usas Cisco, deja Cisco en todos.
+5. Ve a Config > Frame Relay.
+6. Crea los PVC/DLCI siguientes.
+
+PVC 1: Guatemala <-> Honduras
+Guatemala Serial conectado al Cloud: DLCI 102
+Honduras  Serial conectado al Cloud: DLCI 201
+
+PVC 2: Guatemala <-> Salvador
+Guatemala Serial conectado al Cloud: DLCI 104
+Salvador  Serial conectado al Cloud: DLCI 401
+
+PVC 3: Honduras <-> Salvador
+Honduras Serial conectado al Cloud: DLCI 204
+Salvador Serial conectado al Cloud: DLCI 402
+
+Resumen de mapeos:
+Guatemala DLCI 102 -> Honduras  DLCI 201
+Guatemala DLCI 104 -> Salvador  DLCI 401
+Honduras  DLCI 204 -> Salvador  DLCI 402
+
+============================================================
+6) COMANDOS DE VERIFICACION
+============================================================
+
+En cada router:
+show ip interface brief
+show frame-relay pvc
+show frame-relay map
+show ip route
+
+Pruebas desde PCs:
+Desde PC Guatemala:
+ping 182.168.2.2
+ping 182.168.4.2
+
+Desde PC Honduras:
+ping 182.168.1.2
+ping 182.168.4.2
+
+Desde PC Salvador:
+ping 182.168.1.2
+ping 182.168.2.2
+
+============================================================
+7) SI NO HAY CONECTIVIDAD
+============================================================
+
+- Revisa que la interfaz serial del router coincida con la configurada.
+- Revisa que el Cloud tenga las interfaces seriales encendidas.
+- Revisa que el DLCI local del router sea el mismo configurado en el mapa.
+- Revisa que todos los routers tengan encapsulation frame-relay.
+- Revisa que las PCs tengan gateway correcto.
+- Si el router muestra la WAN down/down, revisa el cable serial y el puerto del Cloud.
+- Si muestra up/up pero no responde ping, revisa DLCI/PVC y rutas estaticas.

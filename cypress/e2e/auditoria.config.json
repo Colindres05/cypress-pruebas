@@ -1,0 +1,9 @@
+{
+  "objetivo": "https://juice-shop.herokuapp.com",
+  "producto": "Apple Juice",
+  "limiteSolicitudes": 30,
+  "tiempoEspera": 10000,
+  "alcanceAutorizado": [
+    "https://juice-shop.herokuapp.com"
+  ]
+}
